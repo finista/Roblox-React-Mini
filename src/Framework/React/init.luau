@@ -41,7 +41,7 @@ function reactManager:RegisterComponent(componentFn, props)
 		
 		for _, hook in pairs(self.hooks) do
 			if typeof(hook) == "table" and hook.cleanup then
-				util.safeExecute(self.cleanup)
+				util.safeExecute(hook.cleanup)
 			end
 		end
 

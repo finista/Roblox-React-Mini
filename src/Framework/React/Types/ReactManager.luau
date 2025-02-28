@@ -21,7 +21,8 @@ export type ReactManagerImpl = {
 	RemoveComponent: (self: ReactManager, component: ComponentInst) -> (),
 	UpdateComponent: (self: ReactManager, component: ComponentInst, newProps: {any}?) -> (),
 	UpdateComponents: (self: ReactManager) -> (),
-	DiffChildren: (self: ReactManager, component: ComponentInst, newChildren: {[string]: ComponentInst}) -> (),
+	VerifyChild: (self: ReactManager, child: {any}) -> (boolean, string?),
+	DiffChildren: (self: ReactManager, component: ComponentInst, newChildren: {[string]: {any}}) -> (),
 }
 
 export type ReactManager = typeof(setmetatable({} :: {

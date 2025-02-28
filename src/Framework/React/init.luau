@@ -79,7 +79,16 @@ function reactManager:UpdateComponent(component, newProps)
 	env.__react_manager = self
 	setfenv(component.fn, env)
 
-	local newChildren = component.fn(component.props) or {}
+	local success, data = pcall(component.fn, component.props)
+	if not success then
+		local componentName = debug.info(component.fn, "n") or "component"
+		warn(`Failed to update {componentName}, error: {data or "No error given."}`)
+
+		self.currentComponent = nil
+		return 
+	end
+
+	local newChildren = data or {}
 
 	if not component.hasMounted then
 		if component.onMount then
@@ -100,6 +109,18 @@ function reactManager:UpdateComponents()
 	end
 end
 
+function reactManager:VerifyChild(child)
+	if typeof(child) ~= "table" then
+		return false, "Child component must be a table!"
+	end
+
+	if typeof(child[1]) ~= "function" then
+		return false, "Child[1] must be a component function."
+	end
+
+	return true
+end
+
 function reactManager:DiffChildren(parent, newChildren)
 	local prevChildren = parent.prevChildren
 	
@@ -114,6 +135,12 @@ function reactManager:DiffChildren(parent, newChildren)
 	
 	for key, newChild in pairs(newChildren) do
 		if not prevChildren[key] then
+			local valid, error = self:VerifyChild(newChild)
+			if not valid then
+				warn(error)
+				continue
+			end
+
 			prevChildren[key] = self:RegisterComponent(newChild[1], newChild[2])
 		else
 			local child = prevChildren[key]

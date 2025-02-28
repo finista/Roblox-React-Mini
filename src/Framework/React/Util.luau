@@ -25,5 +25,14 @@ function util.deepEqual(table1: any?, table2: any?)
 	return true
 end
 
+function util.safeExecute(fn: (...any) -> (...any), ...)
+	local success, errorMessage = pcall(fn, ...)
+	if not success then
+		warn(`Function failed during execution, error message: {errorMessage or "No error message given."}`)
+		return false
+	end
+
+	return true
+end
 
 return util

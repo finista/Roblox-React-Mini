@@ -20,6 +20,8 @@ function reactManager.New()
 end
 
 function reactManager:RegisterComponent(componentFn, props)
+	assert(typeof(componentFn) == "function", "Component must be a function.")
+
 	local component: reactManagerTypes.ComponentInst = {
 		fn = componentFn,
 		hasMounted = false,
@@ -39,13 +41,13 @@ function reactManager:RegisterComponent(componentFn, props)
 		
 		for _, hook in pairs(self.hooks) do
 			if typeof(hook) == "table" and hook.cleanup then
-				hook.cleanup()
+				util.safeExecute(self.cleanup)
 			end
 		end
 
 		self.subscribedSlices = {}
 		if self.onUnmount then
-			self.onUnmount()
+			util.safeExecute(self.onUnmount)
 		end
 	end
 	
@@ -81,7 +83,7 @@ function reactManager:UpdateComponent(component, newProps)
 
 	if not component.hasMounted then
 		if component.onMount then
-			component.onMount()
+			util.safeExecute(component.onMount)
 		end
 
 		component.hasMounted = true

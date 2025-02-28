@@ -1,7 +1,7 @@
 --!strict
 local util = {}
 
-function util.deepEqual(table1, table2)
+function util.deepEqual(table1: any?, table2: any?)
 	if table1 == table2 then
 		return true
 	end

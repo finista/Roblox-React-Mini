@@ -151,4 +151,11 @@ function reactManager:DiffChildren(parent, newChildren)
 	end
 end
 
+function reactManager:RunTests()
+	local testManager = require(script:WaitForChild("Test")).New()
+	
+	testManager:LoadTestsIn(script:WaitForChild("Tests"))
+	testManager:RunTests()
+end
+
 return reactManager

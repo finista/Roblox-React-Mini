@@ -23,6 +23,7 @@ export type ReactManagerImpl = {
 	UpdateComponents: (self: ReactManager) -> (),
 	VerifyChild: (self: ReactManager, child: {any}) -> (boolean, string?),
 	DiffChildren: (self: ReactManager, component: ComponentInst, newChildren: {[string]: {any}}) -> (),
+	RunTests: (self: ReactManager) -> ()
 }
 
 export type ReactManager = typeof(setmetatable({} :: {

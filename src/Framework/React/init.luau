@@ -68,9 +68,13 @@ end
 
 function reactManager:UpdateComponent(component, newProps)
 	component.hookIndex = 0
-	
-	if util.deepEqual(component.props, newProps) then
+
+	if newProps and util.deepEqual(component.props, newProps) then
 		return
+	end
+	
+	if newProps then
+		component.props = newProps
 	end
 	
 	self.currentComponent = component

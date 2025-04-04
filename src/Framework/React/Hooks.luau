@@ -1,6 +1,7 @@
 --!strict
 local types = script.Parent.Types
 local reactTypes = require(types.ReactManager)
+local util = require(script.Parent.Util)
 
 local Hooks = {}
 
@@ -29,7 +30,7 @@ function getCurrentComponent(manager: reactTypes.ReactManager)
 	return component
 end
 
-function Hooks.useState(initialValue: any)
+function Hooks.useState(initialValue: any): (any, (state: any & (data: any) -> (any)) -> ())
 	local manager = getManager()
 	local component = getCurrentComponent(manager)
 	component.hookIndex += 1
@@ -39,7 +40,7 @@ function Hooks.useState(initialValue: any)
 		component.hooks[index] = initialValue
 	end
 		
-	local function setState(data: any)
+	local function setState(data: any & (data: any) -> (any))
 		if typeof(data) == "function" then
 			component.hooks[index] = data(component.hooks[index])
 		else
@@ -86,6 +87,19 @@ function Hooks.useEffect(callback: () -> (), dependencies: {any})
 	end
 end
 
+function Hooks.useRef(initialValue: any)
+	local manager = getManager()
+	local component = getCurrentComponent(manager)
+	component.hookIndex += 1
+	local index = component.hookIndex
+
+	if component.hooks[index] == nil then
+		component.hooks[index] = { current = initialValue }
+	end
+
+	return component.hooks[index]
+end
+
 function Hooks.useStore(sliceName: string)
 	local manager = getManager()
 	local component = getCurrentComponent(manager)
@@ -102,7 +116,7 @@ function Hooks.useDispatch(sliceName: string)
 	
 	local function dispatch(fn: (state: any) -> (any))
 		local slice = stateManager:GetSlice(sliceName)
-		local updatedState = fn(slice.state)
+		local updatedState = fn(table.clone(slice.state))
 		
 		assert(updatedState ~= nil, "Dispatch function returned nil as a state.")
 		

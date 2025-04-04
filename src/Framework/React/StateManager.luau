@@ -52,7 +52,7 @@ end
 
 function stateManager:Set(sliceName, state)
 	local slice = self:GetSlice(sliceName)
-	
+
 	if util.deepEqual(slice.state, state) then
 		return
 	end
@@ -63,7 +63,7 @@ end
 
 function stateManager:Notify(sliceName)
 	local slice = self:GetSlice(sliceName)
-	
+
 	for _, component in ipairs(slice.subscribers) do
 		self.manager:UpdateComponent(component)
 	end

@@ -1,15 +1,15 @@
 --!strict
 local types = script.Parent.Types
 local reactTypes = require(types.ReactManager)
-local util = require(script.Parent.Util)
+local hookTypes = require(types.Hooks)
 
-local Hooks = {}
+local Hooks = {} :: hookTypes.HookTypes
 
-function getManager(): (reactTypes.ReactManager)
+function getManager()
 	local level = 1
 	local manager
 
-	while true do
+	while true do 
 		local env = getfenv(level)
 		if not env then break end 
 
@@ -25,12 +25,12 @@ end
 
 function getCurrentComponent(manager: reactTypes.ReactManager)
 	local component = manager.currentComponent
-	assert(component, "Hook failed to find current component reference.")
+	assert(component, "Hooks can only be called during render.")
 		
 	return component
 end
 
-function Hooks.useState(initialValue: any): (any, (state: any & (data: any) -> (any)) -> ())
+function Hooks.useState<T>(initialValue: T): (T, hookTypes.SetState<T>)
 	local manager = getManager()
 	local component = getCurrentComponent(manager)
 	component.hookIndex += 1
@@ -40,7 +40,7 @@ function Hooks.useState(initialValue: any): (any, (state: any & (data: any) -> (
 		component.hooks[index] = initialValue
 	end
 		
-	local function setState(data: any & (data: any) -> (any))
+	local function setState(data: T | (T) -> T)
 		if typeof(data) == "function" then
 			component.hooks[index] = data(component.hooks[index])
 		else
@@ -49,7 +49,7 @@ function Hooks.useState(initialValue: any): (any, (state: any & (data: any) -> (
 			
 		manager:UpdateComponent(component)
 	end
-		
+
 	return component.hooks[index], setState
 end
 
@@ -57,13 +57,13 @@ function Hooks.useEffect(callback: () -> (), dependencies: {any})
 	local manager = getManager()
 	local component = getCurrentComponent(manager)
 	component.hookIndex += 1
-		
+			
 	local index = component.hookIndex
 	local hook = component.hooks[index]
-		
+			
 	local shouldRun = false
 	if hook == nil then
-		shouldRun = true
+			shouldRun = true
 	else
 		for i, dep in ipairs(dependencies) do
 			if hook[i] ~= dep then
@@ -72,7 +72,7 @@ function Hooks.useEffect(callback: () -> (), dependencies: {any})
 			end
 		end
 	end
-		
+			
 	if shouldRun then
 		if hook and hook.cleanup then
 			hook.cleanup()
@@ -85,6 +85,8 @@ function Hooks.useEffect(callback: () -> (), dependencies: {any})
 			component.hooks[index].cleanup = callback()
 		end)
 	end
+
+	return nil
 end
 
 function Hooks.useRef(initialValue: any)
@@ -114,7 +116,7 @@ function Hooks.useDispatch(sliceName: string)
 	local manager = getManager()
 	local stateManager = manager.state
 	
-	local function dispatch(fn: (state: any) -> (any))
+	local function dispatch(fn: (state: {any}) -> ({any}))
 		local slice = stateManager:GetSlice(sliceName)
 		local updatedState = fn(table.clone(slice.state))
 		
@@ -126,7 +128,7 @@ function Hooks.useDispatch(sliceName: string)
 	return dispatch
 end
 
-function Hooks.useMount(fn: () -> ())
+function Hooks.useMount(fn)
 	local manager = getManager()
 	local component = getCurrentComponent(manager)
 	
@@ -136,7 +138,7 @@ function Hooks.useMount(fn: () -> ())
 	component.onMount = fn
 end
 
-function Hooks.useUnmount(fn: () -> ())
+function Hooks.useUnmount(fn)
 	local manager = getManager()
 	local component = getCurrentComponent(manager)
 

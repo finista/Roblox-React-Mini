@@ -15,7 +15,7 @@ function reactManager.New()
 	self.state = stateManager.New(self)
 	self.components = {}
 	self.currentComponent = nil
-	
+
 	return self
 end
 
